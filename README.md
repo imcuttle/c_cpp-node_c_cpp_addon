@@ -31,6 +31,10 @@
 4 directories, 26 files.
 ```
 
+## have a look
+
+![c tcp](imgs/1.gif)
+
 ## get started
 
 - pure c/c++
