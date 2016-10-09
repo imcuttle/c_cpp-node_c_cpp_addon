@@ -4,24 +4,24 @@
 
 ```sh
 /
-├── build.sh  # build all cpp_src files by g++. (sh build.sh)
+├── build.sh            # build all cpp_src files by g++. (sh build.sh)
 ├── cpp_src/
-│   ├── client.cpp # tcp client, command arguments [ip] [port]
+│   ├── client.cpp      # tcp client, command arguments [ip] [port]
 │   ├── client.h
-│   ├── iofuncs.cpp # c standard lib about io
-│   ├── main.cpp    # test
-│   ├── printlist.cpp # variable arguments & print format %s
-│   ├── server.cpp # tcp server, command arguments [ip] [port]
+│   ├── iofuncs.cpp     # c standard lib about io
+│   ├── main.cpp        # test
+│   ├── printlist.cpp   # variable arguments & print format %s
+│   ├── server.cpp      # tcp server, command arguments [ip] [port]
 │   ├── server.h
-│   ├── strfuncs.cpp # c standard lib about string
-│   ├── sysio.cpp   # unix sys call about io
-│   ├── sysioflags.cpp # unix sys call about io
-│   └── sysmmap.cpp # unix sys call about mmap
-├── dir.sh # get directory tree string (need node package `print-dir`)
-├── hellp  # `cpp_src/sysmmap.cpp` need this file.
-├── node_src/ # node files.
-│   ├── addon.cpp   # connect node & c/c++
-│   ├── binding.gyp # config file
+│   ├── strfuncs.cpp    # c standard lib about string
+│   ├── sysio.cpp       # unix sys call about io
+│   ├── sysioflags.cpp  # unix sys call about io
+│   └── sysmmap.cpp     # unix sys call about mmap
+├── dir.sh              # get directory tree string (need node package `print-dir`)
+├── hellp               # `cpp_src/sysmmap.cpp` need this file.
+├── node_src/           # node files.
+│   ├── addon.cpp       # connect node & c/c++
+│   ├── binding.gyp     # config file
 │   ├── client.js
 │   ├── package.json
 │   └── server.js
