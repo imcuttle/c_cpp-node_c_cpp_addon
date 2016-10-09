@@ -6,6 +6,7 @@
 /
 ├── build.sh            # build all cpp_src files by g++. (sh build.sh)
 ├── cpp_src/
+│   ├── hostname.cpp    # get domain name's ip, command arguments [baidu.com]
 │   ├── client.cpp      # tcp client, command arguments [ip] [port]
 │   ├── client.h
 │   ├── iofuncs.cpp     # c standard lib about io

@@ -12,8 +12,11 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <signal.h>
+
 
 void server_run(const char* ip, int port) {
+
     //创建套接字
     int serv_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -42,6 +45,7 @@ void server_run(const char* ip, int port) {
     socklen_t clnt_addr_size = sizeof(clnt_addr);
 
     char str[] = "Hello World!";
+    char strip[32];
     char buffer[40];
 
     int clnt_sock;
@@ -56,7 +60,7 @@ void server_run(const char* ip, int port) {
         if(pid == 0) {
             while(recv(clnt_sock, buffer, sizeof(buffer), 0) > 0) {
                 printf("Message form client %s:%d %d: %s\n",
-                       inet_ntop( AF_INET, &clnt_addr.sin_addr, str, sizeof(str) ), ntohs(clnt_addr.sin_port),
+                       inet_ntop( AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip) ), ntohs(clnt_addr.sin_port),
                        clnt_sock, buffer);
             }
         }
