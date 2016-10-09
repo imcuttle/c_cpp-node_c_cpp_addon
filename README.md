@@ -37,6 +37,10 @@
 
 ![c tcp](imgs/1.gif)
 
+- gethostbyname 
+
+![c gethostbyname](imgs/2.gif)
+
 ## get started
 
 - pure c/c++
