@@ -17,7 +17,8 @@
 
 void server_run(const char* ip, int port) {
 
-    //创建套接字
+    //创建套接字 (tcp->stream(字节流)   udp->dgram(数据报))
+    // http://stackoverflow.com/questions/5815675/strange-thing-sock-dgram-and-sock-stream
     int serv_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     //将套接字和IP、端口绑定
