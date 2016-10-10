@@ -14,9 +14,15 @@
 #include <netinet/in.h>
 #include <signal.h>
 
+void intHandler(int sig) {
+    printf("Bye\n");
+    wait(NULL);
+    exit(1);
+}
 
 void server_run(const char* ip, int port) {
 
+//    signal(SIGINT, intHandler);
     //创建套接字 (tcp->stream(字节流)   udp->datagram(数据报))
     // http://stackoverflow.com/questions/5815675/strange-thing-sock-dgram-and-sock-stream
     int serv_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -59,17 +65,28 @@ void server_run(const char* ip, int port) {
         // 创建子进程，处理来自客户端的数据
         pid_t pid = fork();
         if(pid == 0) {
-            while(recv(clnt_sock, buffer, sizeof(buffer), 0) > 0) {
-                printf("Message form client %s:%d %d: %s\n",
-                       inet_ntop( AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip) ), ntohs(clnt_addr.sin_port),
-                       clnt_sock, buffer);
+            int n;
+            while(1) {
+                n = recv(clnt_sock, buffer, sizeof(buffer), 0);
+                if (n > 0){
+                    printf("Message form client %s:%d: %s\n",
+                           inet_ntop( AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip) ), ntohs(clnt_addr.sin_port), buffer);
+                } else if(n < 0) {
+                    perror("recv");
+                    close(clnt_sock);
+                    break;
+                } else {
+                    printf("FIN form client %s:%d\n",
+                           inet_ntop( AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip) ), ntohs(clnt_addr.sin_port), buffer);
+                    close(clnt_sock);
+                    break;
+                }
             }
         }
     }
 
 
     //关闭套接字
-    close(clnt_sock);
     close(serv_sock);
 }
 

@@ -11,7 +11,7 @@ bool ValidArgsNum(int n, const Nan::FunctionCallbackInfo<v8::Value>& info) {
     if (info.Length() < n) {
         Nan::ThrowTypeError("Wrong number of arguments");
         return false;
-    }
+    }m
     return true;
 }
 

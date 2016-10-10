@@ -48,6 +48,8 @@ void client_run(const char* ip, int port) {
     while (true) {
         scanf("%s", ipt);
         if(write(sock, ipt, sizeof(ipt)) == -1) {
+            perror("write");
+            close(sock);
             break;
         }
     }
