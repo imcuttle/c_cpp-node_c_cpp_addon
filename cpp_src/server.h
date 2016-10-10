@@ -58,6 +58,7 @@ void server_run(const char* ip, int port) {
             while(1) {
                 n = recv(clnt_sock, buffer, sizeof(buffer), 0);
                 if (n > 0){
+                    buffer[n] = '\0';
                     printf("Message form client %s:%d: %s\n",
                            inet_ntop( AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip) ), ntohs(clnt_addr.sin_port), buffer);
                 } else if(n < 0) {

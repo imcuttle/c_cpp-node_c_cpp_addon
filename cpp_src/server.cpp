@@ -15,7 +15,7 @@ int main(int argc, char* args[]) {
         }
     }
 
-    server_run_select(ip, port);
+    server_run(ip, port);
 
     return 0;
 }
