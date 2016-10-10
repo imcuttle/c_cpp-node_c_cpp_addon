@@ -8,9 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <string>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 
 void client_run(const char* ip, int port) {
     //创建套接字
@@ -33,26 +35,86 @@ void client_run(const char* ip, int port) {
         printf("Success connected on %s:%d\n", ip, port);
     }
 
-    //读取服务器传回的数据
     char buffer[40];
-    int n = read(sock, buffer, sizeof(buffer));
-    if(n <= 0) {
-        perror("Error read");
-        close(sock);
-        return;
-    }
+    int maxfd = sock, rRes, wRes, r1Res;
+    fd_set sockSet, inSet, rSet, wSet, r1Set;
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 1000;
 
-    printf("Message form server: %s\n", buffer);
+    FD_ZERO(&sockSet);
+    FD_ZERO(&inSet);
+    FD_SET(sock, &sockSet);
+    FD_SET(STDIN_FILENO, &inSet);
 
-    char ipt[40];
-    while (true) {
-        scanf("%s", ipt);
-        if(write(sock, ipt, sizeof(ipt)) == -1) {
-            perror("write");
+
+    char wBuffer[1024];
+    while(1) {
+        r1Set = inSet;
+        rSet = sockSet;
+        wSet = sockSet;
+
+        rRes = select(maxfd+1, &rSet, NULL, NULL, &timeout);
+
+        if(rRes > 0 && FD_ISSET(sock, &rSet)) {
+//            memset(buffer, 0, sizeof(buffer));
+            int n = read(sock, buffer, sizeof(buffer));
+            if(n < 0) {
+                perror("Error read");
+                close(sock);
+                return;
+            } else if(n == 0) {
+                printf("Server closed.");
+                FD_CLR(sock, &sockSet);
+                close(sock);
+                return;
+            }
+            buffer[n] = '\0';
+            printf("Message form server: %s\n", buffer);
+        }
+
+        r1Res = select(maxfd+1, &r1Set, NULL, NULL, &timeout);
+
+        if(r1Res > 0 && FD_ISSET(STDIN_FILENO, &r1Set)) {
+            int n = read(STDIN_FILENO, buffer, sizeof(buffer));
+            buffer[n-1] = '\0';
+
+            if(n < 0) {
+                perror("Error read");
+                FD_CLR(STDIN_FILENO, &inSet);
+                close(sock);
+                return;
+            }
+            strcat(wBuffer, buffer);
+        }
+
+        wRes = select(maxfd+1, NULL, &wSet, NULL, &timeout);
+        if(wRes > 0 && FD_ISSET(sock, &wSet)) {
+            int len = strlen(wBuffer);
+            int n = write(sock, wBuffer, len);
+            if(n == -1) {
+                perror("write");
+                close(sock);
+                return;
+            } else {
+                if(n < len) {
+                    puts("n<len");
+                    memmove(wBuffer, wBuffer+n, len-n+1);
+                } else {
+                    memset(wBuffer, 0, sizeof(wBuffer));
+                }
+            }
+        }
+
+        if(rRes<0 || wRes<0 || r1Res<0) {
+            perror("select");
+            FD_CLR(sock, &sockSet);
+            FD_CLR(STDIN_FILENO, &inSet);
             close(sock);
-            break;
+            return;
         }
     }
+
 }
 
 
