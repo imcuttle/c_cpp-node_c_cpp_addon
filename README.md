@@ -18,6 +18,7 @@
 │   ├── strfuncs.cpp    # c standard lib about string
 │   ├── sysio.cpp       # unix sys call about io
 │   ├── sysioflags.cpp  # unix sys call about io
+│   ├── shell.cpp       # c shell by unix sys call
 │   └── sysmmap.cpp     # unix sys call about mmap
 ├── dir.sh              # get directory tree string (need node package `print-dir`)
 ├── hellp               # `cpp_src/sysmmap.cpp` need this file.
@@ -44,31 +45,41 @@
 
 ## get started
 
-- pure c/c++
+1. tcp
+    - pure c/c++
+        ```sh
+        # clone this repo & after installed g++ on linux or mac.
+        sh build.sh
+    
+        ./server.out # run server
+    
+        # run client on another shell.
+        # after connected to server successfully
+        # you can input some string and type enter, that will be sent to server.
+        ./client.out
+        ```
+    
+    - node c/c++ addon
+        ```sh
+        # clone this repo & after installed node 6+ on linux or mac.
+        cd node_src
+        npm install
+        sudo npm install -g node-gyp
+        node-gyp rebuild
+    
+        node server.js  # run server
+    
+        # run client on another shell.
+        node client.out
+        ```
+
+2. c Shell
+
     ```sh
-    # clone this repo & after installed g++ on linux or mac.
-    sh build.sh
-
-    ./server.out # run server
-
-    # run client on another shell.
-    # after connected to server successfully
-    # you can input some string and type enter, that will be sent to server.
-    ./client.out
-    ```
-
-- node c/c++ addon
-    ```sh
-    # clone this repo & after installed node 6+ on linux or mac.
-    cd node_src
-    npm install
-    sudo npm install -g node-gyp
-    node-gyp rebuild
-
-    node server.js  # run server
-
-    # run client on another shell.
-    node client.out
+        sh build.sh cpp_src/shell.cpp
+        ./mv.sh # sh mv.sh
+        
+        shell # anywhere
     ```
 
 ## More

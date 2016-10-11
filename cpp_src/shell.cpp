@@ -4,6 +4,12 @@
 
 #include "shell.h"
 
+Shell shell;
+//void signalHandler(int dig) {
+//    printf("singal %d", dig);
+//    shell.killCpid();
+//}
 int main (int n, char** args) {
-    args_analy(n, args);
+//    signal(SIGINT, (void (*)(int))signalHandler);
+    shell.Run();
 }

@@ -146,8 +146,10 @@ void server_run_select (const char* ip, int port) {
 
     int connfd, sockfd;
 
+//    printf("allset %p", &allset);
     for ( ; ; ) {
         rset = allset;	/* structure assignment */
+//        printf("rset %p", &rset);
         // 返回一个大于0的值，表示有多少文件可读，
         // 如果没有可读的文件，则根据timeout参数再判断是否超时，
         // 若超出timeout的时间，select返回0，若发生错误返回负值。
