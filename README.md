@@ -76,10 +76,10 @@
 2. c Shell
 
     ```sh
-        sh build.sh cpp_src/shell.cpp
-        ./mv.sh # sh mv.sh
-        
-        shell # anywhere
+    sh build.sh cpp_src/shell.cpp
+    ./mv.sh # sh mv.sh
+    
+    shell # anywhere
     ```
 
 ## More

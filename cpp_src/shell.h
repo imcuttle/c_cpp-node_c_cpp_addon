@@ -15,8 +15,10 @@
 
 #include <iostream>
 #include <fcntl.h>
-//#include <curses.h>
 #include <signal.h>
+
+#include "cursor.h"
+#include "keyarrow.h"
 
 using namespace std;
 
@@ -24,16 +26,30 @@ class Shell {
 private:
     char buf[1024];
     char** argsBuffer = (char **) calloc(10, sizeof(*argsBuffer));
+
     char* _start() {
         cout << STR_HEAD;
-        cin.getline(buf, sizeof(buf));
-
-//        struct winsize size;
-//        if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) >= 0) {
-//            gotoxy(10000, 10000);
-//            fflush(stdout);
-//        }
-
+        int bufi = 0;
+        while(1) {
+            struct xyz o = getkxyz();
+            if(o.isNormal()) {
+                if(o.x == '\n')
+                    break;
+                buf[bufi++]=o.x;
+            } else if(o.isArrow()) {
+                /*switch(o.z) {
+                    case 65:
+                        continue;
+                    case 66:
+                        continue;
+                    case 67:
+                        MOVERIGHT(1);
+                    case 68:
+                        MOVELEFT(1);
+                }*/
+            }
+        }
+        buf[bufi] = '\0';
         return buf;
     }
     char** split(char *s, const char *delim) {
@@ -86,6 +102,14 @@ private:
             cout << *ss++ << endl;
         }
     }
+    bool isSp(char *s) {
+        while(*s!=NULL) {
+            if(*s++ != ' ') {
+                return false;
+            }
+        }
+        return true;
+    }
 protected:
     const char* STR_HEAD = "$mShell> ";
     static const int HISTORY_LEN = 1000;
@@ -110,8 +134,12 @@ public:
 
     }
     void Run() {
+
         while(1) {
             char* s = _start();
+            if(s == NULL || isSp(s)) {
+                continue;
+            }
 
             /*if(!HistoryContains(s)) {
                 history[hisMax++] = s;
