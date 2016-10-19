@@ -6,8 +6,8 @@
 
 int main(int argc, char* args[]) {
 
-    char *ip = "127.0.0.1";
-    int port = 3235;
+    const char *ip = "127.0.0.1";
+    int port = 3230;
     if(argc > 1) {
         ip = args[1];
         if(argc > 2) {
@@ -15,7 +15,7 @@ int main(int argc, char* args[]) {
         }
     }
 
-    server_run_select(ip, port);
+    server_run_cmd(ip, port);
 
     return 0;
 }

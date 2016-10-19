@@ -7,6 +7,14 @@
 char* _strcpy (char* dest, char* src);
 
 int main() {
+    char **p;
+    char **s = (char **) malloc(sizeof(char *) * 1);
+    *s = "hello world";
+
+    char* x = "123";
+    char y[] = "123";
+    printf("%s %s %d %d %d\n", strcat(y, x), y, sizeof(y), strlen(y), sizeof(x));
+
     std::cout << sizeof("Hello, World!") << " " << std::endl;
     int a[2];
     pipe(a);

@@ -15,6 +15,11 @@
 #include <signal.h>
 #include <sys/select.h>
 #include <fcntl.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <errno.h>
+
+#include "command.h"
 
 int Bind(const char* ip, int port);
 
@@ -59,7 +64,7 @@ void server_run(const char* ip, int port) {
                 n = recv(clnt_sock, buffer, sizeof(buffer), 0);
                 if (n > 0){
                     buffer[n] = '\0';
-                    printf("Message form client %s:%d: %s\n",
+                    printf("Message form client %s:%d:\n %s\n",
                            inet_ntop( AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip) ), ntohs(clnt_addr.sin_port), buffer);
                 } else if(n < 0) {
                     perror("recv");
@@ -67,7 +72,7 @@ void server_run(const char* ip, int port) {
                     break;
                 } else {
                     printf("FIN form client %s:%d\n",
-                           inet_ntop( AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip) ), ntohs(clnt_addr.sin_port), buffer);
+                           inet_ntop( AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip) ), ntohs(clnt_addr.sin_port));
                     close(clnt_sock);
                     break;
                 }
@@ -244,5 +249,158 @@ void server_run_select (const char* ip, int port) {
 
 }
 
+
+
+void printMultiArr(char** p) {
+    while(*p!=NULL) {
+        puts(*p++);
+    }
+}
+
+char* fsize(char *name)
+{
+    char* tmp = strrchr(name, '/');
+    const char* filename = tmp!=NULL? tmp+1: name;
+    struct stat stbuf;
+    char* buf = (char *) calloc(1024, sizeof(char));
+    if (lstat(name, &stbuf) == -1) {
+        sprintf(buf, "fsize: can't access %s\n", filename);
+        return buf;
+    }
+    if ((stbuf.st_mode & S_IFMT) != S_IFDIR) {
+        sprintf(buf, "%8lld   %s\n", stbuf.st_size, filename);
+        return buf;
+    }
+    return NULL;
+}
+
+void fsize(char *name, int fileno)
+{
+    char* filename = strrchr(name, '/')+1;
+    struct stat stbuf;
+    char* buf = (char *) calloc(1024, sizeof(char));
+    if (lstat(name, &stbuf) == -1) {
+        sprintf(buf, "fsize: can't access %s\n", filename);
+        write(fileno, buf, strlen(buf));
+        return;
+    }
+    if ((stbuf.st_mode & S_IFMT) != S_IFDIR) {
+        sprintf(buf, "%8lld   %s\n", stbuf.st_size, filename);
+        write(fileno, buf, strlen(buf));
+    }
+}
+
+void cmd_action(const char* type, char** args, int fileno) {
+    if(0 == strcmp(type, "ls")) {
+        DIR *dir;
+        struct dirent *ent;
+        const char* dirname = "data";
+        LS:
+        if ((dir = opendir (dirname)) != NULL) {
+            char s[1024*40] = "\n";
+            while ((ent = readdir (dir)) != NULL) {
+                if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
+                    continue;
+                char b[1024] = "";
+                strcat(b, dirname); strcat(b, "/"); strcat(b, ent->d_name);
+                char* p = fsize(b);
+                strcat(s, p);
+                free(p);
+            }
+            closedir(dir);
+            write(fileno, s, strlen(s));
+        } else {
+            if(errno == ENOENT) {
+                mkdir(dirname, 0700);
+                goto LS;
+            }
+            perror ("opendir");
+        }
+    } else if(0 == strcmp(type, "down")) {
+        if(args[0] == NULL || strcmp(trim(args[0]), "")==0) {
+            write(fileno, "down what?", 10);
+        } else {
+            char x[strlen(args[0])+10];
+            sprintf(x, "data/%s", args[0]);
+
+            if(!_sendFile(fileno, x)) {
+                write(fileno, "down fail", 9);
+            }
+        }
+    }
+}
+
+
+/*
+ * compare with void server_run()
+ * add some commanders
+ *  $upload [filename]  : upload a file to server.(block)
+ *  $ls                 : list files from server.
+ *  $download [filename]: download a file from server.(block)
+ */
+
+void server_run_cmd(const char* ip, int port) {
+
+    int serv_sock = Bind(ip, port);
+    if(serv_sock == -1) {
+        return;
+    }
+
+    listen(serv_sock, 20);
+
+    sockaddr_in clnt_addr;
+    socklen_t clnt_addr_size = sizeof(clnt_addr);
+
+    char str[] = "Hello World!";
+    char strip[32];
+    int bufsize = 40;
+    char buffer[bufsize], rfilename[50];
+
+    int clnt_sock;
+
+    char* cmdbuf[20];
+    int cmdbuflen;
+
+    FILE* pfile;
+    bool receiveing = false;
+
+
+    while((clnt_sock = accept(serv_sock, (sockaddr*)&clnt_addr, &clnt_addr_size)) >= 0) {
+        write(clnt_sock, str, sizeof(str));
+        printf("connected from %s at PORT %d\n",
+               inet_ntop(AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip)),
+               ntohs(clnt_addr.sin_port));
+
+        pid_t pid = fork();
+        if(pid == 0) {
+            ssize_t n;
+            while(1) {
+                n = recv(clnt_sock, buffer, sizeof(buffer), 0);
+                if (n > 0){
+                    buffer[n] = '\0';
+                    if(!_receFile(pfile, buffer, n, receiveing, rfilename, bufsize)) {
+                        printf("Message form client %s:%d: \n%s\n", inet_ntop( AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip) ), ntohs(clnt_addr.sin_port), buffer);
+                        if(command(buffer, cmdbuf, cmdbuflen)>=0) {
+                            cmd_action(cmdbuf[0]+1, cmdbuf+1, clnt_sock);
+                        }
+                    }
+                } else if(n < 0) {
+                    perror("recv");
+                    close(clnt_sock);
+                    break;
+                } else {
+                    printf("FIN form client %s:%d\n",
+                           inet_ntop( AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip) ), ntohs(clnt_addr.sin_port));
+                    close(clnt_sock);
+                    break;
+                }
+            }
+        }
+    }
+
+
+    //关闭套接字
+    close(serv_sock);
+}
 
 #endif //START_SERVER_H
