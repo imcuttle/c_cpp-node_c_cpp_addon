@@ -28,7 +28,7 @@ int command (char* s, char** buf, int &n) {
     return i;
 }
 
-bool _receFile(FILE* &pfile, char* buffer, ssize_t n, bool& receiveing, char* rfilename, int size) {
+bool _receFile(FILE* &pfsile, char* buffer, ssize_t n, bool& receiveing, char* rfilename, int size) {
     bool run = false;
     char* last = NULL;
     if(!receiveing && isfileHead(buffer)) {
