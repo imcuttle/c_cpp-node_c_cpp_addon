@@ -290,7 +290,7 @@ void fsize(char *name, int fileno)
     }
 }
 
-void cmd_action(const char* type, char** args, int fileno) {
+bool cmd_action(const char* type, char** args, int fileno) {
     if(0 == strcmp(type, "ls")) {
         DIR *dir;
         struct dirent *ent;
@@ -316,18 +316,26 @@ void cmd_action(const char* type, char** args, int fileno) {
             }
             perror ("opendir");
         }
-    } else if(0 == strcmp(type, "down")) {
+    } else if(0 == strcmp(type, "get")) {
         if(args[0] == NULL || strcmp(trim(args[0]), "")==0) {
-            write(fileno, "down what?", 10);
+            write(fileno, "get what?", 10);
         } else {
+            char* rename = args[0];
+            if(args[1]!=NULL && strcmp(trim(args[1]), "")!=0) {
+                rename = args[1];
+            }
             char x[strlen(args[0])+10];
             sprintf(x, "data/%s", args[0]);
 
-            if(!_sendFile(fileno, x)) {
+            if(!_sendFile(fileno, x, rename)) {
                 write(fileno, "down fail", 9);
             }
         }
+    } else if(0 == strcmp(type, "quit")) {
+        close(fileno);
+        return false;
     }
+    return true;
 }
 
 
@@ -381,7 +389,9 @@ void server_run_cmd(const char* ip, int port) {
                     if(!_receFile(pfile, buffer, n, receiveing, rfilename, bufsize)) {
                         printf("Message form client %s:%d: \n%s\n", inet_ntop( AF_INET, &clnt_addr.sin_addr, strip, sizeof(strip) ), ntohs(clnt_addr.sin_port), buffer);
                         if(command(buffer, cmdbuf, cmdbuflen)>=0) {
-                            cmd_action(cmdbuf[0]+1, cmdbuf+1, clnt_sock);
+                            if(!cmd_action(cmdbuf[0]+1, cmdbuf+1, clnt_sock)) {
+                                exit(1);
+                            }
                         }
                     }
                 } else if(n < 0) {
@@ -398,7 +408,7 @@ void server_run_cmd(const char* ip, int port) {
         }
     }
 
-
+    wait(NULL);
     //关闭套接字
     close(serv_sock);
 }

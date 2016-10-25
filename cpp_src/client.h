@@ -128,9 +128,9 @@ void client_run(const char* ip, int port) {
 /*
  * compare with void client_run()
  * add some commanders
- *  $upload [filename]  : upload a file to server.(block)
+ *  $put [filename]  : upload a file to server.(block)
  *  $ls                 : list files from server.
- *  $download [filename]: download a file from server.(block)
+ *  $get [filename]: download a file from server.(block)
  */
 void client_run_cmd(const char* ip, int port) {
     //创建套接字
@@ -223,14 +223,19 @@ void client_run_cmd(const char* ip, int port) {
                 return;
             } else {
                 if(command(wBuffer, cmdbuf, cmdbuflen)>=0) {
-                    if(strcmp("upload", cmdbuf[0]+1) == 0) {
+                    if(strcmp("put", cmdbuf[0]+1) == 0) {
                         if(cmdbuf[1]==NULL || strcmp(cmdbuf[1], "") == 0) {
                             fprintf(stderr, "filename is empty\n");
+                        } else if(cmdbuf[2]==NULL || strcmp(cmdbuf[2], "") == 0) {
+                            fprintf(stderr, "aim filename is empty\n");
                         } else {
-                            if(!_sendFile(sock, cmdbuf[1])) {
+                            if(!_sendFile(sock, cmdbuf[1], cmdbuf[2])) {
                                 fprintf(stderr, "upload fail\n");
                             }
                         }
+                    } else if (strcmp("quit", cmdbuf[0]+1) == 0) {
+                        close(sock);
+                        exit(1);
                     }
                 }
 

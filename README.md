@@ -15,6 +15,7 @@
 │   ├── printlist.cpp   # variable arguments & print format %s
 │   ├── server.cpp      # tcp server, command arguments [ip] [port]
 │   ├── server.h
+│   ├── command.h       
 │   ├── strfuncs.cpp    # c standard lib about string
 │   ├── sysio.cpp       # unix sys call about io
 │   ├── sysioflags.cpp  # unix sys call about io
@@ -34,6 +35,10 @@
 ```
 
 ## have a look
+
+- tcp (sendfile & recvfile)
+
+![c tcp](imgs/up&down.gif)
 
 - tcp (server & client)
 

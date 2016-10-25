@@ -28,7 +28,7 @@ int command (char* s, char** buf, int &n) {
     return i;
 }
 
-bool _receFile(FILE* &pfsile, char* buffer, ssize_t n, bool& receiveing, char* rfilename, int size) {
+bool _receFile(FILE* &pfile, char* buffer, ssize_t n, bool& receiveing, char* rfilename, int size) {
     bool run = false;
     char* last = NULL;
     if(!receiveing && isfileHead(buffer)) {
@@ -72,10 +72,10 @@ bool _receFile(FILE* &pfsile, char* buffer, ssize_t n, bool& receiveing, char* r
     return run;
 }
 
-bool _sendFile(int out_fd, const char* file) {
+bool _sendFile(int out_fd, const char* file,  const char* rename) {
     int fd = open(file, O_RDONLY);
-    char* tmp = strrchr(file, '/');
-    const char* filename = tmp!=NULL? tmp+1: file;
+//    char* tmp = strrchr(file, '/');
+//    const char* filename = tmp!=NULL? tmp+1: file;
     if(fd==-1) {
         char b[1024];
         sprintf(b, "open failed %s", file);
@@ -90,11 +90,11 @@ bool _sendFile(int out_fd, const char* file) {
     off_t len = 0;
 
     char head[1024], sizehd[1024];
-    sprintf(head, "---file: %s\r\n", filename);
+    sprintf(head, "---file: %s\r\n", rename);
 //    sprintf(sizehd, "---size: %lld\r\n\r\n", state.st_size);
 
-    struct sf_hdtr hdtr = NULL;
-    iovec headers = NULL, trailers = NULL;
+    struct sf_hdtr hdtr;
+    iovec headers, trailers;
     headers.iov_base = head;
     headers.iov_len = strlen(head);
 //    trailers.iov_base = (void *)"file---\r\n"; //todo: don't recv sometimes ??
