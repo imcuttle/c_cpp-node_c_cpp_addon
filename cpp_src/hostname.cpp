@@ -15,6 +15,8 @@ int main(int argc, char **argv) {
     char   *ptr="baidu.com", **pptr;
     struct hostent *hptr;
 
+
+
     if(argc>1) {
         ptr = argv[1];
     }
@@ -26,7 +28,7 @@ int main(int argc, char **argv) {
 
     printf("official hostname: %s\n", hptr->h_name);
     for(pptr = hptr->h_aliases; *pptr != NULL; pptr++) {
-        printf(" alias:%s\n", *pptr);
+        printf(" alias: %s\n", *pptr);
     }
 
     char   str[32];

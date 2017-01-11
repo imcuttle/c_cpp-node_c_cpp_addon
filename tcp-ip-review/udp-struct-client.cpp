@@ -9,13 +9,26 @@
 #include <arpa/inet.h>
 #include <string.h>
 
-#define MAXLINE 80
+struct A{
+    long a;
+    int b;
+    short c;
+    char d[100];
+    double e;
+
+    void print() {
+        printf("[A] a: %ld, b: %d, c: %d, d: %s, e: %lf\n", this->a, this->b, this->c, this->d, this->e);
+    }
+};
+
 #define SERV_PORT 8000
 
 int main(int argc, char *argv[])
 {
     struct sockaddr_in servaddr, from_addr;
     int sockfd, n;
+    int MAXLINE = sizeof(struct A);
+
     char buf[] = "hello world!";
     char recvbuf[MAXLINE];
     char str[INET_ADDRSTRLEN];
@@ -29,15 +42,21 @@ int main(int argc, char *argv[])
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(SERV_PORT);
 
-    while (fgets(buf, MAXLINE, stdin) != NULL) {
-        n = sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
+    struct A a;
+    a.a = 123456789;
+    a.b = 12345;
+    a.c = 123;
+    a.e = 123.123;
+
+    while (fgets(a.d, sizeof(a.d), stdin) != NULL) {
+        n = sendto(sockfd, (void*)&a, MAXLINE, 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
         if (n == -1) {
             perror("sendTO");
             return 0;
         }
-        printf("n: %d\n", n);
-        memset(recvbuf, 0, strlen(recvbuf));
-        socklen_t len = (socklen_t)sizeof(from_addr);
+
+        memset(recvbuf, 0, sizeof(recvbuf));
+        socklen_t len = (socklen_t) sizeof(from_addr);
         n = recvfrom(sockfd, (void *)recvbuf, (size_t)MAXLINE, 0, (struct sockaddr *)&from_addr, &len);
         if (n == -1) {
             perror("recvfrom");
@@ -47,7 +66,10 @@ int main(int argc, char *argv[])
                inet_ntop(AF_INET, &from_addr.sin_addr, str, sizeof(str)),
                ntohs(from_addr.sin_port));
 
-        write(STDOUT_FILENO, recvbuf, n);
+        struct A* tmp = (struct A *) recvbuf;
+//        memcpy(&tmp, recvbuf, MAXLINE);
+
+        tmp->print();
     }
 
     close(sockfd);

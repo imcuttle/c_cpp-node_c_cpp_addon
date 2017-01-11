@@ -169,6 +169,7 @@ void server_run_select (const char* ip, int port) {
         // 监听集合中有变化
         if (nready>0) {
             if(FD_ISSET(serv_sock, &rset)) {
+                // printf("%s\n", "check new client connection ");
                 /* new client connection */
                 clnt_addr_size = sizeof(clnt_addr);
                 connfd = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
@@ -200,6 +201,7 @@ void server_run_select (const char* ip, int port) {
         }
 
         if(FD_ISSET(STDIN_FILENO, &rset)) {
+            // printf("%s\n", "check new input ");
             char lbuf[1024];
             int n = scanf("%s", lbuf);
             for (i = 0; i <= maxi; i++) {    /* check all clients for data */

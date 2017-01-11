@@ -143,7 +143,7 @@ void client_run_cmd(const char* ip, int port) {
     serv_addr.sin_addr.s_addr = inet_addr(ip);  //具体的IP地址
     serv_addr.sin_port = htons(port);  //端口
     if(-1 == connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr))) {
-        std::string str("Error connect on");
+        std::string str("Error connect on ");
         char s[6];
         sprintf(s, "%d", port);
         str = str+ip+":"+s;
